@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import Atom
-
+from scipy import stats
 
 class RADFramework:
 
@@ -38,11 +38,13 @@ class RADFramework:
 
         print self.df.to_string()
 
-    def create_histograms(self):
+    def create_histograms(self, color = 'b'):
         for header in self.df.columns[1:]:
             x = self.df[header]
             x = x[~np.isnan(x)]
-            plt.hist(x, bins=4)
+            print header
+            print stats.zscore(x)
+            plt.hist(x, color= color, bins=10)
             plt.ylabel(header)
             plt.show()
 
@@ -172,4 +174,23 @@ class RADFramework:
         self.df = temp
         # drop rows with >= 2 Nan values
         self.df = self.df.dropna(thresh=self.df.shape[1]-2)
+        print self.df.to_string()
+
+    def remove_outliers_zscore(self, z_thresh=2):
+
+        for col in self.df.columns[1:]:
+            x = self.df[col]
+            x = x[~np.isnan(x)]
+            x = stats.zscore(x)
+            print col
+            print x
+            count = 0
+            for i, val in enumerate(self.df[col]):
+                if np.isnan(val):
+                    continue
+                elif np.abs(x[count]) > z_thresh:
+                    count += 1
+                    self.df[col][i] = np.NaN
+                else:
+                    count += 1
         print self.df.to_string()

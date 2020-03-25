@@ -5,8 +5,9 @@ Genome = RADFramework.RADFramework()
 Genome.read_table_from_csv("amber_wing_data/plot44_52_INFO.xls")
 
 Genome.drop_columns()
-
-# Genome.create_histograms()
+Genome.create_histograms()
+Genome.remove_outliers_zscore(z_thresh=1.75)
+Genome.create_histograms(color='r')
 Genome.create_atom_codes()
 Genome.assign_atoms_bins()
 
