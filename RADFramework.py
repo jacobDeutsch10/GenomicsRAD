@@ -62,28 +62,47 @@ class RADFramework:
                 complement += 'C'
         return complement
 
-    def create_atom_codes(self):
+    def create_atom_codes(self, num=3):
         dna = ["A", "G", "C", "T"]
-
-        atoms = []
-
-        for i in dna:
-            for j in dna:
-                for k in dna:
-                    atom = i+j+k
-                    complement = self.find_complement(atom)
-                    if atom not in atoms and complement not in atoms:
-                          atoms.append(atom)
-        # random.shuffle(atoms)
+        first = 'A'*num
+        atoms = [first]
+        print atoms
+        if num == 3:
+            for i in dna:
+                for j in dna[-1:] + dna[:-1]:
+                    for k in dna[-2:] + dna[:-2]:
+                        atom = i+j+k
+                        complement = self.find_complement(atom)
+                        if atom not in atoms and complement not in atoms:
+                            atoms.append(atom)
+        elif num == 4:
+            for i in dna:
+                for j in dna[-1:] + dna[:-1]:
+                    for k in dna[-2:] + dna[:-2]:
+                        for l in dna[-3:] + dna[:-3]:
+                            atom = i+j+k+l
+                            complement = self.find_complement(atom)
+                            if atom not in atoms and complement not in atoms:
+                                atoms.append(atom)
+        elif num == 5:
+            for i in dna:
+                for j in dna[-1:] + dna[:-1]:
+                    for k in dna[-2:] + dna[:-2]:
+                        for l in dna[-3:] + dna[:-3]:
+                            for m in dna[-4:]+ dna[:-4]:
+                                atom = i+j+k+l+m
+                                complement = self.find_complement(atom)
+                                if atom not in atoms and complement not in atoms:
+                                    atoms.append(atom)
+        print atoms
         complements = [self.find_complement(i) for i in atoms]
 
-        self.atomList = [(atoms[i], complements[i]) for i in range(0, self.numAtoms)]
-
-        print self.atomList
+        self.atomList = [(atoms[i], complements[i]) for i in range(0, self.numAtoms+1)]
 
     def assign_atoms_bins(self):
 
         self.atom_dict = dict.fromkeys(self.subunit_categories)
+        start = Atom.Atom(self.atomList.pop(0)[0])
         for sub in self.subunit_categories:
             self.atom_dict[sub] = [Atom.Atom(self.atomList.pop()[0]) for i in range(0, self.numBins)]
         for key in self.atom_dict:
@@ -97,8 +116,10 @@ class RADFramework:
                 count += 1
                 atom.set_upper_bound(sub_min + interval*count)
                 print "%s %s lower: %f upper: %f" % (key, atom.get_code(), atom.get_lower_bound(), atom.get_upper_bound())
+        self.atom_dict["start"] = start
 
     def get_subunit_min(self, sub):
+
         column_names = []
         for col in self.df.columns:
             name = self.convert_header_to_sub(col)
@@ -108,6 +129,7 @@ class RADFramework:
         return min(self.df[column_names].min())
 
     def get_subunit_max(self, sub):
+
         column_names = []
         for col in self.df.columns:
             name = self.convert_header_to_sub(col)
@@ -194,3 +216,24 @@ class RADFramework:
                 else:
                     count += 1
         print self.df.to_string()
+
+    def add_start_stop(self):
+
+        self.rad_df = self.rad_df.drop("dt", axis=1)
+        num_objects = len(self.rad_df.columns)/self.numAtoms
+        rad_by_object = np.array_split(self.rad_df, num_objects, axis = 1)
+        for rad in rad_by_object:
+            rad.insert(0, 'start', self.atom_dict['start'].get_code())
+            rad.insert(len(rad.columns), 'stop', self.atom_dict['start'].get_complement())
+
+        for i in rad_by_object:
+            print self.convert_rad_matrix_to_string(i)
+
+    @staticmethod
+    def convert_rad_matrix_to_string(df):
+
+        radString = df.to_string(header=False, index=False, index_names=False).split('\n')
+
+        radString = ''.join(radString)
+        return ''.join(radString.split(' '))
+
