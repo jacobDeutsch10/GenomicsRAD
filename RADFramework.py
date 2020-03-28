@@ -5,6 +5,7 @@ import random
 import Atom
 from scipy import stats
 
+
 class RADFramework:
 
     def __init__(self):
@@ -16,13 +17,15 @@ class RADFramework:
         self.atomList = []*self.numAtoms
         self.atom_dict = None
         self.rad_df = None
+        self.filename = None
 
     def set_subunits(self, categories):
 
         self.subunit_categories = categories
 
-    def read_table_from_csv(self, csv):
-        self.df = pd.read_excel(csv, sheet_name=0, header=3)
+    def read_table_from_xl(self, xlname):
+        self.df = pd.read_excel(xlname, sheet_name=0, header=3)
+        self.filename = xlname
 
     def drop_columns(self):
 
@@ -236,4 +239,23 @@ class RADFramework:
 
         radString = ''.join(radString)
         return ''.join(radString.split(' '))
+
+    def get_key_from_xl(self):
+
+        plotting_sheet = pd.read_excel(self.filename, sheet_name=2, header=0)
+
+        data_name = plotting_sheet.columns[0].split('_')
+        data_name = '_'.join([data_name[1], data_name[3]])
+        plotting_sheet = plotting_sheet[18:]
+        frames = ''
+        object_names = []
+        for index, row in plotting_sheet.iterrows():
+            if row[0] == '*':
+                frames = str(row[10]) + '_' + str(row[11])
+                object_names = [row[1], row[2]]
+
+        keys = [str(o) + '_' + data_name + '_' + frames for o in object_names]
+        print keys
+        return keys
+
 
