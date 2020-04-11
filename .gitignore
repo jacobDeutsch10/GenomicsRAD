@@ -1,0 +1,10 @@
+*.PNG
+*pyc
+*pdf
+VVT*
+genomicsHack.py
+PATMOS*
+*.pptx
+*xlsx
+*/
+*docx

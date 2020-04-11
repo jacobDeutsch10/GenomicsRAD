@@ -6,12 +6,12 @@ import Atom
 from scipy import stats
 
 
-class RADFramework:
+class RADFrame:
 
-    def __init__(self):
+    def __init__(self, behaviors=None, frame=None):
 
-        self.df = None
-        self.subunit_categories = ['vv', 'thetaToR', 'zt', 'curvature']
+        self.df = frame
+        self.subunit_categories = ['vv', 'thetaToR', 'zt', 'curvature'] if behaviors is None else behaviors
         self.numBins = 4
         self.numAtoms = (len(self.subunit_categories)*self.numBins)
         self.atomList = []*self.numAtoms
@@ -23,9 +23,22 @@ class RADFramework:
 
         self.subunit_categories = categories
 
+    def set_df(self, df):
+
+        self.df = df
+
     def read_table_from_xl(self, xlname):
         self.df = pd.read_excel(xlname, sheet_name=0, header=3)
+        self.df = self.df.dropna(how='all')
         self.filename = xlname
+
+    def get_behavior_vals(self, behavior):
+        vals = np.empty(0)
+        for col in self.df.columns:
+            if self.convert_header_to_sub(col) == behavior:
+                vals = np.append(vals, self.df[col].values)
+        return vals
+
 
     def drop_columns(self):
 
@@ -41,18 +54,18 @@ class RADFramework:
 
         print self.df.to_string()
 
-    def create_histograms(self, color = 'b'):
+    def create_histograms(self, color='b'):
         for header in self.df.columns[1:]:
             x = self.df[header]
             x = x[~np.isnan(x)]
             print header
             print stats.zscore(x)
-            plt.hist(x, color= color, bins=10)
+            plt.hist(x, color=color, bins=10)
             plt.ylabel(header)
             plt.show()
 
-    @staticmethod
-    def find_complement(code):
+    @classmethod
+    def find_complement(cls, code):
         complement = ''
         for i in code:
             if i == 'A':
