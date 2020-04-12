@@ -8,11 +8,11 @@ from scipy import stats
 
 class RADFrame:
 
-    def __init__(self, behaviors=None, frame=None):
+    def __init__(self, behaviors=None, frame=None, num_bins=4):
 
         self.df = frame
         self.subunit_categories = ['vv', 'thetaToR', 'zt', 'curvature'] if behaviors is None else behaviors
-        self.numBins = 4
+        self.numBins = num_bins
         self.numAtoms = (len(self.subunit_categories)*self.numBins)
         self.atomList = []*self.numAtoms
         self.atom_dict = None
@@ -37,8 +37,7 @@ class RADFrame:
         for col in self.df.columns:
             if self.convert_header_to_sub(col) == behavior:
                 vals = np.append(vals, self.df[col].values)
-        return vals
-
+        return vals[~np.isnan(vals)]
 
     def drop_columns(self):
 
@@ -264,6 +263,7 @@ class RADFrame:
         object_names = []
         for index, row in plotting_sheet.iterrows():
             if row[0] == '*':
+
                 frames = str(row[10]) + '_' + str(row[11])
                 object_names = [row[1], row[2]]
 
@@ -271,4 +271,5 @@ class RADFrame:
         print keys
         return keys
 
-
+    def __str__(self):
+        return self.df.to_string()

@@ -3,7 +3,10 @@ import MultiFrame
 
 
 multi = MultiFrame.MultiFrame()
-multi.read_from_xl_FULL("amber_wing_data/plotFULL_INFO.xls")
+multi.filename = "amber_wing_data/singleFULL_INFO.xls"
+multi.get_keys()
+multi.read_from_xl_FULL("amber_wing_data/singleFULL_INFO.xls")
+
 """
 Genome = RADFrame.RADFrame()
 

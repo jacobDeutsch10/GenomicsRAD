@@ -5,13 +5,13 @@ from scipy import stats
 
 class Behavior:
 
-    def __init__(self, name, vals=None):
+    def __init__(self, name, vals=None, num_bins=4):
         """
         a Behavior represents one variable being analyzed for Genomic discretization
         :param name: name of the behavior
         :param vals: numpy array of all values for this behavior in the data set being analyzed for
         """
-
+        self.num_bins = num_bins
         self.name = name
         self.vals = vals[~np.isnan(vals)] if vals is not None else None
         self.atoms = None
@@ -31,19 +31,19 @@ class Behavior:
                 self.vals[i] = np.NaN
         self.vals = self.vals[~np.isnan(self.vals)]
 
-    def create_atom_bins(self, num_bins=4):
+    def create_atom_bins(self):
         """
         creates bins for atoms based on min and max value of the behavior
-        :param num_bins: number of bins to split the data set into
+
         """
 
         # create numbins atoms
-        self.atoms = [Atom.Atom() for _ in range(0, num_bins)]
+        self.atoms = [Atom.Atom() for _ in range(0, self.num_bins)]
 
         # find interval of each bin based on min and max
         b_min = np.min(self.vals) - 0.0001
         b_max = np.max(self.vals) + 0.0001
-        interval = (b_max - b_min)/num_bins
+        interval = (b_max - b_min)/self.num_bins
 
         # iterate over atoms and assign upper and lower bounds
         count = 0
