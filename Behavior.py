@@ -24,6 +24,8 @@ class Behavior:
         """
 
         x = self.vals
+        print self.name
+        print self.vals
         x = stats.zscore(x)
 
         for i, val in enumerate(self.vals):
@@ -51,7 +53,24 @@ class Behavior:
             atom.set_lower_bound(b_min + interval * count)
             count += 1
             atom.set_upper_bound(b_min + interval * count)
+        # behavior class no longer needs the values
+        np.delete(self.vals, 1)
 
     def set_vals(self, vals):
         self.vals = vals
 
+    def add_vals(self, vals):
+
+        if self.vals is None:
+            self.vals = np.array(vals)
+        else:
+            self.vals = np.append(self.vals, vals)
+
+    def set_atom_codes(self, codes):
+        for atom in self.atoms:
+            atom.set_code(codes.pop()[0])
+
+    def get_code_for_value(self, value):
+        for atom in self.atoms:
+            if atom.is_in_atom():
+                return atom.get_code()

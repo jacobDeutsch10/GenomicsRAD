@@ -4,7 +4,8 @@ class Atom:
     def __init__(self, code=None):
         self.code = code if code is not None else None
         self.complement = None
-        self.find_complement()
+        if code is not None:
+            self.find_complement()
         self.lowerBound = 0
         self.upperBound = 100
 

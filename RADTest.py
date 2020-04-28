@@ -6,6 +6,12 @@ multi = MultiFrame.MultiFrame()
 multi.filename = "amber_wing_data/singleFULL_INFO.xls"
 multi.get_keys()
 multi.read_from_xl_FULL("amber_wing_data/singleFULL_INFO.xls")
+multi.create_behavior_bins()
+multi.avg_over_time_step(0.1)
+multi.print_multi()
+multi.create_atom_codes(num=5)
+multi.assign_atom_codes()
+multi.convert_frames_to_rad()
 
 """
 Genome = RADFrame.RADFrame()

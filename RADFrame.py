@@ -20,11 +20,9 @@ class RADFrame:
         self.filename = None
 
     def set_subunits(self, categories):
-
         self.subunit_categories = categories
 
     def set_df(self, df):
-
         self.df = df
 
     def read_table_from_xl(self, xlname):
@@ -37,6 +35,7 @@ class RADFrame:
         for col in self.df.columns:
             if self.convert_header_to_sub(col) == behavior:
                 vals = np.append(vals, self.df[col].values)
+        vals = vals.astype(float)
         return vals[~np.isnan(vals)]
 
     def drop_columns(self):
@@ -51,7 +50,7 @@ class RADFrame:
 
         self.df.drop(self.df.columns.difference(columns_we_want), 1, inplace=True)
 
-        print self.df.to_string()
+        # print self.df.to_string()
 
     def create_histograms(self, color='b'):
         for header in self.df.columns[1:]:
@@ -157,7 +156,7 @@ class RADFrame:
     def convert_header_to_sub(name):
         return '_'.join(name.split("_")[:-1])
 
-    def create_rad_matrix(self):
+    def create_rad_matrix(self, behaviors):
 
         columns = []
 
@@ -172,16 +171,16 @@ class RADFrame:
             eq_col = self.convert_header_to_sub(col)
             num = int(col.split("_")[-1])
             sub_unit = self.convert_header_to_sub(eq_col)
-            self.rad_df[col] = [self.atom_dict[sub_unit][num].get_code() if (self.atom_dict[sub_unit][num]).is_in_atom(i)
-                           else (self.atom_dict[sub_unit][num]).get_complement() for i in self.df[eq_col]]
+            self.rad_df[col] = [behaviors[sub_unit].atoms[num].get_code() if (behaviors[sub_unit].atoms[num]).is_in_atom(i)
+                           else (behaviors[sub_unit].atoms[num]).get_complement() for i in self.df[eq_col]]
 
-        print self.rad_df.to_string()
+        print self.rad_df.columns
 
     def average_df_over_time_step(self, step):
 
         avg_dict = dict.fromkeys(self.df.columns)
         num_rows = self.df.shape[0]-1
-        print num_rows
+        self.df = self.df.astype(float)
         for key in avg_dict:
             avg_dict[key] = []
         count = 1
@@ -232,17 +231,17 @@ class RADFrame:
                     count += 1
         print self.df.to_string()
 
-    def add_start_stop(self):
+    def add_start_stop(self, start_code):
 
         self.rad_df = self.rad_df.drop("dt", axis=1)
         num_objects = len(self.rad_df.columns)/self.numAtoms
         rad_by_object = np.array_split(self.rad_df, num_objects, axis = 1)
         for rad in rad_by_object:
-            rad.insert(0, 'start', self.atom_dict['start'].get_code())
-            rad.insert(len(rad.columns), 'stop', self.atom_dict['start'].get_complement())
-
-        for i in rad_by_object:
-            print self.convert_rad_matrix_to_string(i)
+            rad.insert(0, 'start', start_code)
+            rad.insert(len(rad.columns), 'stop', self.find_complement(start_code))
+        self.rad_df = rad_by_object[0]
+        #for i in rad_by_object:
+            #print self.convert_rad_matrix_to_string(i)
 
     @staticmethod
     def convert_rad_matrix_to_string(df):

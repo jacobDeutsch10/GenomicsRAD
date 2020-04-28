@@ -27,6 +27,7 @@ class MultiFrame:
             self.behaviors = {key: Behavior.Behavior(name=key, num_bins=self.num_bins) for key in behaviors}
 
         self.keys = []
+        self.atomList = []
 
     def read_from_xl_FULL(self, filename):
         """
@@ -35,11 +36,11 @@ class MultiFrame:
         """
         self.filename = filename
         # readfile and drop empty columns
-        df = pd.read_excel(filename, index=False, sheet_name=0, header=3)
+        df = pd.read_excel(filename, index=False, sheet_name=0, header=2)
         df = df.dropna(how='all')
         index = 0
         frames = []
-
+        print "DUDE plus df.iloc =" + df.iloc[0][0]
         # iterate over rows of excel file and separate into a list of dataframes
         while index < len(df):
             found = False
@@ -76,7 +77,6 @@ class MultiFrame:
         data_name = '_'.join([data_name[1], data_name[3]])
         plotting_sheet = plotting_sheet[18:].reset_index(drop=True)
         plotting_sheet.columns = plotting_sheet.iloc[0]
-        print plotting_sheet.to_string()
         frames = 'NA'
         object_names = []
         for index, row in plotting_sheet.iterrows():
@@ -97,22 +97,27 @@ class MultiFrame:
     def __str__(self):
         return str([str(i) for i in self.frames])
 
+    def create_behavior_bins(self):
 
+        for key, behavior in zip(self.behaviors.keys(), self.behaviors.values()):
+            for frame in self.frames:
+                behavior.add_vals(frame.get_behavior_vals(key))
+            behavior.remove_zscore(zscore=2)
+            behavior.create_atom_bins()
+            print key
+            print behavior.vals
 
-
-
-"""
     def create_atom_codes(self, num=3):
         dna = ["A", "G", "C", "T"]
         first = 'A'*num
         atoms = [first]
-        print atoms
+
         if num == 3:
             for i in dna:
                 for j in dna[-1:] + dna[:-1]:
                     for k in dna[-2:] + dna[:-2]:
                         atom = i+j+k
-                        complement = RADFrame.find_complement(atom)
+                        complement = self.find_complement(atom)
                         if atom not in atoms and complement not in atoms:
                             atoms.append(atom)
         elif num == 4:
@@ -134,8 +139,46 @@ class MultiFrame:
                                 complement = self.find_complement(atom)
                                 if atom not in atoms and complement not in atoms:
                                     atoms.append(atom)
-        print atoms
         complements = [self.find_complement(i) for i in atoms]
+        self.atomList = [(atoms[i], complements[i]) for i in range(0, self.num_bins*len(self.behaviors.keys())+1)]
 
-        self.atomList = [(atoms[i], complements[i]) for i in range(0, self.numAtoms+1)]
-"""
+    @staticmethod
+    def find_complement(code):
+        complement = ''
+        for i in code:
+            if i == 'A':
+                complement += 'T'
+            elif i == 'T':
+                complement += 'A'
+            elif i == 'C':
+                complement += 'G'
+            elif i == 'G':
+                complement += 'C'
+        return complement
+
+    def avg_over_time_step(self, step):
+        for frame in self.frames:
+            frame.average_df_over_time_step(step)
+
+    def assign_atom_codes(self):
+
+        for behavior in self.behaviors.values():
+            behavior.set_atom_codes(self.atomList)
+
+    def print_multi(self):
+        for frame in self.frames:
+            print(frame.df.to_string())
+
+    def convert_frames_to_rad(self):
+        strings = []
+        for frame in self.frames:
+            frame.create_rad_matrix(self.behaviors)
+            frame.add_start_stop(self.atomList[0][0])
+            strings.append(frame.convert_rad_matrix_to_string(frame.rad_df))
+        strings_df = pd.DataFrame(columns=['keys', 'Strings'])
+        print(len(strings))
+        print(self.keys)
+        print(len(self.keys))
+        strings_df['keys'] = self.keys
+        strings_df['Strings'] = strings
+        strings_df.to_csv('RAD_STRINGS.csv')
