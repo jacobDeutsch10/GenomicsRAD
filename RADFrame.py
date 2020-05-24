@@ -156,23 +156,32 @@ class RADFrame:
     def convert_header_to_sub(name):
         return '_'.join(name.split("_")[:-1])
 
-    def create_rad_matrix(self, behaviors):
+    def create_rad_matrix(self, behaviors, include_off=True):
 
         columns = []
+        if include_off:
+            for col in self.df.columns[1:]:
+                for i in range(0, self.numBins):
+                    columns.append(col + '_' + str(i))
 
-        for col in self.df.columns[1:]:
-            for i in range(0, self.numBins):
-                columns.append(col + '_' + str(i))
-        print columns
+            self.rad_df = pd.DataFrame()
+            # self.rad_df['dt'] = self.df['dt']
+            for col in columns:
+                eq_col = self.convert_header_to_sub(col)
+                num = int(col.split("_")[-1])
+                sub_unit = self.convert_header_to_sub(eq_col)
+                self.rad_df[col] = [behaviors[sub_unit].atoms[num].get_code() if (behaviors[sub_unit].atoms[num]).is_in_atom(i)
+                                        else (behaviors[sub_unit].atoms[num]).get_complement() for i in self.df[eq_col]]
+        else:
+            self.rad_df = pd.DataFrame()
+            columns = self.df.columns[1:]
+            print columns
+            for col in columns:
+                sub_unit = self.convert_header_to_sub(col)
+                print col
+                print sub_unit
+                self.rad_df[col] = [behaviors[sub_unit].get_code_for_value(i) for i in self.df[col]]
 
-        self.rad_df = pd.DataFrame()
-        self.rad_df['dt'] = self.df['dt']
-        for col in columns:
-            eq_col = self.convert_header_to_sub(col)
-            num = int(col.split("_")[-1])
-            sub_unit = self.convert_header_to_sub(eq_col)
-            self.rad_df[col] = [behaviors[sub_unit].atoms[num].get_code() if (behaviors[sub_unit].atoms[num]).is_in_atom(i)
-                           else (behaviors[sub_unit].atoms[num]).get_complement() for i in self.df[eq_col]]
 
         print self.rad_df.columns
 
@@ -233,13 +242,17 @@ class RADFrame:
 
     def add_start_stop(self, start_code):
 
-        self.rad_df = self.rad_df.drop("dt", axis=1)
+        #self.rad_df = self.rad_df.drop("dt", axis=1)
         num_objects = len(self.rad_df.columns)/self.numAtoms
-        rad_by_object = np.array_split(self.rad_df, num_objects, axis = 1)
-        for rad in rad_by_object:
-            rad.insert(0, 'start', start_code)
-            rad.insert(len(rad.columns), 'stop', self.find_complement(start_code))
-        self.rad_df = rad_by_object[0]
+        if num_objects > 1:
+            rad_by_object = np.array_split(self.rad_df, num_objects, axis = 1)
+            for rad in rad_by_object:
+                rad.insert(0, 'start', start_code)
+                rad.insert(len(rad.columns), 'stop', self.find_complement(start_code))
+            self.rad_df = rad_by_object[0]
+        else:
+            self.rad_df.insert(0, 'start', start_code)
+            self.rad_df.insert(len(self.rad_df.columns), 'stop', self.find_complement(start_code))
         #for i in rad_by_object:
             #print self.convert_rad_matrix_to_string(i)
 

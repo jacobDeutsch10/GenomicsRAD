@@ -72,5 +72,6 @@ class Behavior:
 
     def get_code_for_value(self, value):
         for atom in self.atoms:
-            if atom.is_in_atom():
+            if atom.is_in_atom(value):
                 return atom.get_code()
+        return 'AAAAA'

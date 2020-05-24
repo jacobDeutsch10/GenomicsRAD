@@ -3,6 +3,7 @@ import Atom
 import Behavior
 import pandas as pd
 import numpy as np
+import random
 
 
 class MultiFrame:
@@ -91,7 +92,7 @@ class MultiFrame:
                 if isinstance(plotting_sheet['From another project'][index], str):
                     dn = plotting_sheet['From another project'][index].split('_')
                     dn = '_'.join([dn[1], dn[3]])
-                self.keys.append([str(o) + '_' + dn + '_' + frames for o in object_names])
+                self.keys.append(str(index) + '_' + [str(o) + '_' + dn + '_' + frames for o in object_names][0])
         print self.keys
 
     def __str__(self):
@@ -139,6 +140,11 @@ class MultiFrame:
                                 complement = self.find_complement(atom)
                                 if atom not in atoms and complement not in atoms:
                                     atoms.append(atom)
+
+        random.seed(42)
+        temp = atoms[1:]
+        random.shuffle(temp)
+        atoms[1:] = temp
         complements = [self.find_complement(i) for i in atoms]
         self.atomList = [(atoms[i], complements[i]) for i in range(0, self.num_bins*len(self.behaviors.keys())+1)]
 
@@ -172,7 +178,7 @@ class MultiFrame:
     def convert_frames_to_rad(self):
         strings = []
         for frame in self.frames:
-            frame.create_rad_matrix(self.behaviors)
+            frame.create_rad_matrix(self.behaviors, include_off=False)
             frame.add_start_stop(self.atomList[0][0])
             strings.append(frame.convert_rad_matrix_to_string(frame.rad_df))
         strings_df = pd.DataFrame(columns=['keys', 'Strings'])
@@ -181,4 +187,4 @@ class MultiFrame:
         print(len(self.keys))
         strings_df['keys'] = self.keys
         strings_df['Strings'] = strings
-        strings_df.to_csv('RAD_STRINGS.csv')
+        strings_df.to_csv('RAD_STRINGS4.csv')
