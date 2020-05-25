@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-import Atom
+from . import Atom
 from scipy import stats
 
 
@@ -50,14 +50,12 @@ class RADFrame:
 
         self.df.drop(self.df.columns.difference(columns_we_want), 1, inplace=True)
 
-        # print self.df.to_string()
-
     def create_histograms(self, color='b'):
         for header in self.df.columns[1:]:
             x = self.df[header]
             x = x[~np.isnan(x)]
-            print header
-            print stats.zscore(x)
+            print(header)
+            print(stats.zscore(x))
             plt.hist(x, color=color, bins=10)
             plt.ylabel(header)
             plt.show()
@@ -80,7 +78,7 @@ class RADFrame:
         dna = ["A", "G", "C", "T"]
         first = 'A'*num
         atoms = [first]
-        print atoms
+        #print atoms
         if num == 3:
             for i in dna:
                 for j in dna[-1:] + dna[:-1]:
@@ -108,7 +106,7 @@ class RADFrame:
                                 complement = self.find_complement(atom)
                                 if atom not in atoms and complement not in atoms:
                                     atoms.append(atom)
-        print atoms
+        #print(atoms)
         complements = [self.find_complement(i) for i in atoms]
 
         self.atomList = [(atoms[i], complements[i]) for i in range(0, self.numAtoms+1)]
@@ -129,7 +127,7 @@ class RADFrame:
                 atom.set_lower_bound(sub_min + interval*count)
                 count += 1
                 atom.set_upper_bound(sub_min + interval*count)
-                print "%s %s lower: %f upper: %f" % (key, atom.get_code(), atom.get_lower_bound(), atom.get_upper_bound())
+                #print("%s %s lower: %f upper: %f" % (key, atom.get_code(), atom.get_lower_bound(), atom.get_upper_bound()))
         self.atom_dict["start"] = start
 
     def get_subunit_min(self, sub):
@@ -139,7 +137,7 @@ class RADFrame:
             name = self.convert_header_to_sub(col)
             if name == sub:
                 column_names.append(col)
-        print column_names
+        #print(column_names)
         return min(self.df[column_names].min())
 
     def get_subunit_max(self, sub):
@@ -149,7 +147,7 @@ class RADFrame:
             name = self.convert_header_to_sub(col)
             if name == sub:
                 column_names.append(col)
-        print column_names
+        #print(column_names)
         return max(self.df[column_names].max())
 
     @staticmethod
@@ -175,15 +173,15 @@ class RADFrame:
         else:
             self.rad_df = pd.DataFrame()
             columns = self.df.columns[1:]
-            print columns
+            # print columns
             for col in columns:
                 sub_unit = self.convert_header_to_sub(col)
-                print col
-                print sub_unit
+                #print(col)
+                #print(sub_unit)
                 self.rad_df[col] = [behaviors[sub_unit].get_code_for_value(i) for i in self.df[col]]
 
 
-        print self.rad_df.columns
+        # print(self.rad_df.columns)
 
     def average_df_over_time_step(self, step):
 
@@ -219,7 +217,7 @@ class RADFrame:
         self.df = temp
         # drop rows with >= 2 Nan values
         self.df = self.df.dropna(thresh=self.df.shape[1]-2)
-        print self.df.to_string()
+        #print self.df.to_string()
 
     def remove_outliers_zscore(self, z_thresh=2):
 
@@ -227,8 +225,8 @@ class RADFrame:
             x = self.df[col]
             x = x[~np.isnan(x)]
             x = stats.zscore(x)
-            print col
-            print x
+            #print col
+            #print x
             count = 0
             for i, val in enumerate(self.df[col]):
                 if np.isnan(val):
@@ -238,7 +236,7 @@ class RADFrame:
                     self.df[col][i] = np.NaN
                 else:
                     count += 1
-        print self.df.to_string()
+        #print self.df.to_string()
 
     def add_start_stop(self, start_code):
 
@@ -280,7 +278,7 @@ class RADFrame:
                 object_names = [row[1], row[2]]
 
         keys = [str(o) + '_' + data_name + '_' + frames for o in object_names]
-        print keys
+        #print keys
         return keys
 
     def __str__(self):

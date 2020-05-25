@@ -1,4 +1,4 @@
-import Atom
+from . import Atom
 import numpy as np
 from scipy import stats
 
@@ -24,8 +24,8 @@ class Behavior:
         """
 
         x = self.vals
-        print self.name
-        print self.vals
+        print(self.name)
+        print(self.vals)
         x = stats.zscore(x)
 
         for i, val in enumerate(self.vals):

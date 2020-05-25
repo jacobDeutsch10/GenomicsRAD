@@ -1,6 +1,4 @@
-import RADFrame
-import Atom
-import Behavior
+from .frames import RADFrame, Atom, Behavior
 import pandas as pd
 import numpy as np
 import random
@@ -41,7 +39,6 @@ class MultiFrame:
         df = df.dropna(how='all')
         index = 0
         frames = []
-        print "DUDE plus df.iloc =" + df.iloc[0][0]
         # iterate over rows of excel file and separate into a list of dataframes
         while index < len(df):
             found = False
@@ -66,7 +63,7 @@ class MultiFrame:
         # drop unused columns
         for frame in self.frames:
             frame.drop_columns()
-        print len(self.frames)
+        print(len(self.frames))
 
     def get_keys(self):
         """
@@ -93,7 +90,7 @@ class MultiFrame:
                     dn = plotting_sheet['From another project'][index].split('_')
                     dn = '_'.join([dn[1], dn[3]])
                 self.keys.append(str(index) + '_' + [str(o) + '_' + dn + '_' + frames for o in object_names][0])
-        print self.keys
+        print(self.keys)
 
     def __str__(self):
         return str([str(i) for i in self.frames])
@@ -105,8 +102,8 @@ class MultiFrame:
                 behavior.add_vals(frame.get_behavior_vals(key))
             behavior.remove_zscore(zscore=2)
             behavior.create_atom_bins()
-            print key
-            print behavior.vals
+            print (key)
+            print (behavior.vals)
 
     def create_atom_codes(self, num=3):
         dna = ["A", "G", "C", "T"]
@@ -175,7 +172,7 @@ class MultiFrame:
         for frame in self.frames:
             print(frame.df.to_string())
 
-    def convert_frames_to_rad(self):
+    def convert_frames_to_rad(self, out_path = "./RAD_STRINGS.csv"):
         strings = []
         for frame in self.frames:
             frame.create_rad_matrix(self.behaviors, include_off=False)
@@ -187,4 +184,4 @@ class MultiFrame:
         print(len(self.keys))
         strings_df['keys'] = self.keys
         strings_df['Strings'] = strings
-        strings_df.to_csv('RAD_STRINGS4.csv')
+        strings_df.to_csv(out_path)
