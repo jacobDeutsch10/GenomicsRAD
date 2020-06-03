@@ -2,7 +2,7 @@ from .frames import RADFrame, Atom, Behavior
 import pandas as pd
 import numpy as np
 import random
-
+import os
 
 class MultiFrame:
     """
@@ -59,10 +59,10 @@ class MultiFrame:
 
         # create a list of RADframes from list of read in dataframes
         self.frames = [RADFrame.RADFrame(behaviors=self.behaviors.keys(), frame=i, num_bins=self.num_bins) for i in frames]
+        if len(self.keys) != 0:
+            for i in range(0,len(self.keys)):
+                self.frames[i].set_key(self.keys[i])
 
-        # drop unused columns
-        for frame in self.frames:
-            frame.drop_columns()
         print(len(self.frames))
 
     def get_keys(self):
@@ -89,12 +89,17 @@ class MultiFrame:
                 if isinstance(plotting_sheet['From another project'][index], str):
                     dn = plotting_sheet['From another project'][index].split('_')
                     dn = '_'.join([dn[1], dn[3]])
-                self.keys.append(str(index) + '_' + [str(o) + '_' + dn + '_' + frames for o in object_names][0])
-        print(self.keys)
+                self.keys.append([str(o) + '_' + dn + '_' + frames for o in object_names][0])
 
     def __str__(self):
         return str([str(i) for i in self.frames])
 
+
+    def drop_columns(self):
+        # drop unused columns
+        for frame in self.frames:
+            frame.drop_columns()
+        
     def create_behavior_bins(self):
 
         for key, behavior in zip(self.behaviors.keys(), self.behaviors.values()):
@@ -171,6 +176,11 @@ class MultiFrame:
     def print_multi(self):
         for frame in self.frames:
             print(frame.df.to_string())
+    
+    def write_csvs(self, directory):
+        for frame in self.frames:
+            path = os.path.join(directory, frame.key + ".csv")
+            frame.print_df_to_csv(path)
 
     def convert_frames_to_rad(self, out_path = "./RAD_STRINGS.csv"):
         strings = []

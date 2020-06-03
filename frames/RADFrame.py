@@ -4,6 +4,7 @@ import numpy as np
 import random
 from . import Atom
 from scipy import stats
+from mpl_toolkits import mplot3d
 
 
 class RADFrame:
@@ -18,7 +19,24 @@ class RADFrame:
         self.atom_dict = None
         self.rad_df = None
         self.filename = None
+        self.key = ''
 
+    def set_key(self, key):
+        self.key = key
+    
+    def print_df_to_csv(self, path):
+        self.df.to_csv(path)
+    
+    def plot_3d(self, key):
+        xyz=[]
+        for col in self.df.columns:
+            if self.convert_header_to_sub(col) in ['xt', 'yt', 'zt']:
+                xyz.append(col)
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.scatter3D(self.df[xyz[0]].to_numpy(dtype=float), self.df[xyz[1]].to_numpy(dtype=float), self.df[xyz[2]].to_numpy(dtype=float), c=self.df[xyz[2]].to_numpy(dtype=float))
+        plt.title(key)
+        plt.show()
     def set_subunits(self, categories):
         self.subunit_categories = categories
 
